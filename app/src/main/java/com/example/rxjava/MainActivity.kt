@@ -51,7 +51,7 @@ class MainActivity : ComponentActivity() {
                 }
             }
 
-            val dispose = dataSourceObservable()
+            val disposeObservable = dataSourceObservable()
                 .subscribeOn(Schedulers.newThread())
                 .subscribe({
                     Log.e(TAG, "next int $it")
@@ -62,26 +62,35 @@ class MainActivity : ComponentActivity() {
                 })
 
 
-            val dispose2 = dataSourceFlowable()
+            val disposeFlowable = dataSourceFlowable()
                 .subscribeOn(Schedulers.computation())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe({
                     Log.e(TAG, "next int $it")
                     textState = it.toString()
                 }, {
-                    Log.e(TAG, "it ${it.localizedMessage}")
+                    Log.e(TAG, "Error, it ${it.localizedMessage}")
                 })
 
-            val dispose3 = dataSourceSingle()
+            val disposeSingle = dataSourceSingle()
                 .subscribeOn(Schedulers.computation())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe({
                     Log.e(TAG, "next int single $it")
                     textState = it.toString()
                 }, {
-                    Log.e(TAG, "it ${it.localizedMessage}")
+                    Log.e(TAG, "Error, it ${it.localizedMessage}")
                 })
 
+            val disposeCompletable = dataSourceSingle()
+                .subscribeOn(Schedulers.computation())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe({
+                    Log.e(TAG, "next int single $it")
+                    textState = it.toString()
+                }, {
+                    Log.e(TAG, "Error, it ${it.localizedMessage}")
+                })
         }
     }
 }
@@ -93,7 +102,6 @@ fun dataSourceObservable(): Observable<Int> {
             subscriber.onNext(i)
         }
     }
-
 }
 
 fun dataSourceFlowable(): Flowable<Int> {
@@ -109,5 +117,12 @@ fun dataSourceSingle(): Single<List<Int>> {
     return Single.create { subscriber ->
         val list = (0..10).toList()
         subscriber.onSuccess(list)
+    }
+}
+
+fun dataSourceCompletable(): Completable{
+    return Completable.create { subscriber ->
+        val list = (0..10).toList()
+        subscriber.onComplete()
     }
 }
