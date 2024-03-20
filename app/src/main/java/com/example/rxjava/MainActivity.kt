@@ -26,7 +26,7 @@ class MainActivity : ComponentActivity() {
             ) {
                 Text(text = "Click me")
             }
-            val dispose = dataSource()
+            val dispose = dataSourceObservable()
                 .subscribeOn(Schedulers.newThread())
                 .subscribe({
                     Log.e(TAG, "next int $it")
@@ -35,16 +35,37 @@ class MainActivity : ComponentActivity() {
                 }, {
 
                 })
+
+
+            val dispose2 = dataSourceFlowable()
+                .subscribeOn(Schedulers.computation())
+                .observeOn(AndroidSchedulers.mainTread())
+                .subscribe({
+                    Log.e(TAG, "next int $it")
+                }, {
+                    Log.e(TAG, "it ${it.localizedMessage}")
+                })
         }
     }
 }
 
-fun dataSource(): Observable<Int> {
+fun dataSourceObservable(): Observable<Int> {
     return Observable.create { subscriber ->
         for (i in 0..100) {
             Thread.sleep(1000)
             subscriber.onNext(i)
         }
     }
+
+}
+
+fun dataSourceFlowable(): Flowable<Int> {
+    return Flowable.create ({ subscriber ->
+        for (i in 0..100) {
+            Thread.sleep(1000)
+            subscriber.onNext(i)
+        }
+        subscriber.onComplete()
+    }, BackpressureStrategy.DROP)
 
 }
