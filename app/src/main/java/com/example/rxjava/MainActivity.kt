@@ -29,7 +29,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContent {
             var textState by remember { mutableStateOf("") }
-            Column(){
+            Column() {
                 Button(
                     onClick = { Log.e(TAG, "async works!") },
                     modifier = Modifier
@@ -46,7 +46,7 @@ class MainActivity : ComponentActivity() {
                 ) {
                     Text(
                         text = textState,
-                        style = TextStyle(fontSize = 20 .sp)
+                        style = TextStyle(fontSize = 20.sp)
                     )
                 }
             }
@@ -71,6 +71,17 @@ class MainActivity : ComponentActivity() {
                 }, {
                     Log.e(TAG, "it ${it.localizedMessage}")
                 })
+
+            val dispose3 = dataSourceSingle()
+                .subscribeOn(Schedulers.computation())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe({
+                    Log.e(TAG, "next int single $it")
+                    textState = it.toString()
+                }, {
+                    Log.e(TAG, "it ${it.localizedMessage}")
+                })
+
         }
     }
 }
@@ -86,11 +97,17 @@ fun dataSourceObservable(): Observable<Int> {
 }
 
 fun dataSourceFlowable(): Flowable<Int> {
-    return Flowable.create ({ subscriber ->
+    return Flowable.create({ subscriber ->
         for (i in 0..900000) {
             subscriber.onNext(i)
         }
         subscriber.onComplete()
     }, BackpressureStrategy.LATEST)
+}
 
+fun dataSourceSingle(): Single<List<Int>> {
+    return Single.create { subscriber ->
+        val list = (0..10).toList()
+        subscriber.onSuccess(list)
+    }
 }
