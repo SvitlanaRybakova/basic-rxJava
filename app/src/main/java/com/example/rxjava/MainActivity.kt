@@ -126,3 +126,11 @@ fun dataSourceCompletable(): Completable{
         subscriber.onComplete()
     }
 }
+
+fun dataSourceMaybe(): Maybe<List<Int>>{
+    return Maybe.create { subscriber ->
+        val list = (0..10).toList()
+        subscriber.onSuccess(list)
+        subscriber.onComplete()
+    }
+}
